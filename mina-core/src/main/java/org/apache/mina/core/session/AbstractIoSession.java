@@ -57,6 +57,10 @@ import org.apache.mina.core.write.WriteTimeoutException;
 import org.apache.mina.core.write.WriteToClosedSessionException;
 import org.apache.mina.util.ExceptionMonitor;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+
 /**
  * Base implementation of {@link IoSession}.
  * 
@@ -555,7 +559,9 @@ public abstract class AbstractIoSession implements IoSession {
                 File file = (File) message;
                 openedFileChannel = new FileInputStream(file).getChannel();
                 message = new FilenameFileRegion(file, openedFileChannel, 0, openedFileChannel.size());
-            }
+            } else if (message instanceof JSONObject) {
+				message = JSON.toJSONString(message, SerializerFeature.WriteNonStringKeyAsString, SerializerFeature.DisableCircularReferenceDetect);
+			}
         } catch (IOException e) {
             ExceptionMonitor.getInstance().exceptionCaught(e);
             return DefaultWriteFuture.newNotWrittenFuture(this, e);
